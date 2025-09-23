@@ -5,29 +5,37 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: ybarakat <ybarakat@learner.42.tech>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/22 08:32:05 by ybarakat          #+#    #+#             */
-/*   Updated: 2025/09/22 16:55:38 by ybarakat         ###   ########.fr       */
+/*   Created: 2025/09/22 08:40:18 by ybarakat          #+#    #+#             */
+/*   Updated: 2025/09/22 08:47:29 by ybarakat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
 
-int	*ft_range(int min, int max)
+int	ft_ultimate_range(int **range, int min, int max)
 {
 	int	i;
-	int	s;
 	int	*arr;
+	int	s;
 
-	i = 0;
 	if (min >= max)
-		return (NULL);
+	{
+		*range = NULL;
+		return (0);
+	}
+	i = 0;
 	s = max - min;
 	arr = (int *)malloc(sizeof(int) * s);
+	if (arr == NULL)
+	{
+		*range = NULL;
+		return (-1);
+	}
 	while (min < max)
 	{
 		arr[i] = min;
 		min++;
 		i++;
 	}
-	return (arr);
+	return (s);
 }
