@@ -1,0 +1,160 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   f1.c                                               :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ybarakat <ybarakat@learner.42.tech>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/09/26 13:55:11 by ybarakat          #+#    #+#             */
+/*   Updated: 2025/09/26 18:10:28 by ybarakat         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+
+int	putnbr(char c)
+{
+	return (c - 48)
+}
+char	*get_digit(int num_length)
+{
+	int	count_digits;
+	int	last_digits;
+	char	*arr;
+	int	c;
+
+	arr = malloc(2);
+	last_digits = num_length % 3;
+	c = 0;
+	while (num_length > 2)
+	{
+		num_length = num_length / 3;
+		c++;
+	}
+	arr[0] = last_digits;
+	arr[1] = count_digits;
+	return (arr);
+}
+
+void	get_num(int num_length, char *num, int  dict_size, char *dict)
+{
+	int	i;
+	int	j;
+	char	*arr;
+
+	arr = malloc(2);
+	arr = get_digit(num_length);
+	i = 0;
+	j = 0;
+	while (num_length)
+	{
+		while (i < dict_size)
+		{
+			if (num[i] == dict[j])
+			{
+				write(1, sict[j+2], 14);
+				continue;
+			}
+			j++;
+		}
+		i++;
+	}
+}
+
+
+int	get_len(char *s)
+{
+	int 	i;
+
+	i = 0;
+	while (s[i])
+		i++;
+	return (i);
+}
+
+
+int	dict_size(int c, char **d)
+{
+	int	i;
+	char	s;
+	int	fd;
+
+	if (c == 2)
+	{
+		fd = open("numbers.dict", O_RDONLY);
+		if (fd == -1)
+		{
+        		write(1, "Dict Error\n", 11);
+			return (1);
+		}
+	
+		i = 0;
+		while (read(fd, &s, 1))
+			i++;
+		return (i);
+	}
+	if (c == 3)
+	{
+		fd = open(d[1], O_RDONLY);
+		if (fd == -1)
+			write(1, "Dict Error\n", 11);
+		i = 0;
+		while (read(fd, &s, 1))
+			i++;
+		return (i);
+	}
+}
+
+
+char	*read_dict(int c, char **d, int dict_size)
+{
+        char    *dict;
+        int     fd;
+
+        dict = malloc(dict_size)
+        if (c == 2)
+        {
+                fd = open("numbers.dict", O_RDONLY);
+                if (fd == -1)
+                {
+                        write(1, "Dict Error\n", 11);
+                        return (1);
+                }
+                read(fd, &dict, dict_size);
+        }
+        if (c == 3)
+        {
+                fd = open(d[1], O_RDONLY);
+                if (fd == -1)
+                        write(1, "Dict Error\n", 11);
+                read(fd, &dict, dict_size);
+        }
+	return (dict);
+}
+
+
+int	main(int argc, char **argv)
+{
+	int	size;
+	char	*dict;
+	int	num_length;
+
+	size = dict_size(argc, argv);
+	dict = read_dict(argc, argv, x);
+	if (argc == 2)
+	{
+		num_length = get_length(argv[1]);
+		get_num(num_length, argv[1], size, dict);
+	if (argc == 3)
+	{
+		num_length = get_length(argv[2];
+		get_num(num_length, argv[2], size, dict);
+	}
+
+	printf("%d" , y);
+	return (0);
+}
