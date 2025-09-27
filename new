@@ -1,0 +1,379 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   dict_size.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ybarakat <ybarakat@learner.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/09/27 10:14:00 by ybarakat          #+#    #+#             */
+/*   Updated: 2025/09/27 10:14:00 by ybarakat         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include <fcntl.h>
+#include <unistd.h>
+
+int     dict_size(int c, char **d)
+{
+        int     i;
+        char    s;
+        int     fd;
+
+        i = 0;
+        if (c == 2)
+                fd = open("numbers.dict", O_RDONLY);
+        else if (c == 3)
+                fd = open(d[1], O_RDONLY);
+        else
+                return (0);
+        if (fd == -1)
+        {
+                write(1, "Dict Error\n", 11);
+                return (0);
+        }
+        while (read(fd, &s, 1) > 0)
+                i++;
+        close(fd);
+        return (i);
+}
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_len.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ybarakat <ybarakat@learner.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/09/27 10:10:00 by ybarakat          #+#    #+#             */
+/*   Updated: 2025/09/27 10:10:00 by ybarakat         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+int     get_len(char *s)
+{
+        int     i;
+
+        i = 0;
+        while (s[i])
+                i++;
+        return (i);
+}
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_num.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ybarakat <ybarakat@learner.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/09/27 10:18:00 by ybarakat          #+#    #+#             */
+/*   Updated: 2025/09/27 10:18:00 by ybarakat         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include <unistd.h>
+#include <stdlib.h>
+
+int ft_strcmp(char *s1, char *s2);
+int get_len(char *s);
+
+// Helper to print a number from the dictionary
+void print_number(char *num, char **numbers, char **words, int dict_count)
+{
+    int i = 0;
+
+    while (i < dict_count)
+    {
+        if (ft_strcmp(numbers[i], num) == 0)
+        {
+            write(1, words[i], get_len(words[i]));
+            write(1, " ", 1);
+            return ;
+        }
+        i++;
+    }
+    write(1, "Dict Error\n", 11);
+    _exit(1);
+}
+
+// Convert a single-digit number to a string
+void digit_to_str(int n, char *str)
+{
+    int i = 0;
+    if (n == 0)
+        str[i++] = '0';
+    while (n > 0)
+    {
+        str[i++] = (n % 10) + '0';
+        n /= 10;
+    }
+    str[i] = '\0';
+    // Reverse the string
+    for (int j = 0; j < i / 2; j++)
+    {
+        char tmp = str[j];
+        str[j] = str[i - 1 - j];
+        str[i - 1 - j] = tmp;
+    }
+}
+
+// Main function to split the number and print words
+void get_num(char *num_str, char **numbers, char **words, int dict_count)
+{
+    long num = atol(num_str);
+    char tmp[32];
+
+    if (num == 0)
+    {
+        print_number("0", numbers, words, dict_count);
+        write(1, "\n", 1);
+        return ;
+    }
+
+    long divisor;
+    long part;
+
+    // Handle billions, millions, thousands, hundreds
+    long scales[] = {1000000000000000000000000000000000,
+                     1000000000000000000000000000000,
+                     1000000000000000000000000000,
+                     1000000000000000000000000,
+                     1000000000000000000000,
+                     1000000000000000000,
+                     1000000000000000,
+                     1000000000000,
+                     1000000000,
+                     1000000,
+                     1000,
+                     100};
+    int i;
+
+    for (i = 0; i < 12; i++)
+    {
+        divisor = scales[i];
+        if (num >= divisor)
+        {
+            part = num / divisor;
+            digit_to_str(part, tmp);
+            get_num(tmp, numbers, words, dict_count);
+            // Print scale word
+            digit_to_str(divisor, tmp);
+            print_number(tmp, numbers, words, dict_count);
+            num %= divisor;
+        }
+    }
+
+    // Handle tens and ones
+    if (num >= 20)
+    {
+        long tens = (num / 10) * 10;
+        digit_to_str(tens, tmp);
+        print_number(tmp, numbers, words, dict_count);
+        num %= 10;
+    }
+    if (num > 0)
+    {
+        digit_to_str(num, tmp);
+        print_number(tmp, numbers, words, dict_count);
+    }
+    write(1, "\n", 1);
+}
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parse_dict.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ybarakat <ybarakat@learner.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/09/27 10:00:00 by ybarakat          #+#    #+#             */
+/*   Updated: 2025/09/27 10:00:00 by ybarakat         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include <unistd.h>
+
+int skip_spaces(char *str, int i)
+{
+    while (str[i] == ' ' || str[i] == '\t')
+        i++;
+    return (i);
+}
+
+int parse_dict(char *dict, char **numbers, char **words)
+{
+    int i;
+    int j;
+    int k;
+    int count;
+
+    i = 0;
+    count = 0;
+    while (dict[i])
+    {
+        i = skip_spaces(dict, i);
+        j = i;
+        while (dict[i] && dict[i] != ':')
+            i++;
+        if (!dict[i])
+            break ;
+        dict[i] = '\0';
+        while (i - 1 >= j && (dict[i - 1] == ' ' || dict[i - 1] == '\t'))
+        {
+            dict[i - 1] = '\0';
+            i--;
+        }
+        numbers[count] = &dict[j];
+
+        i++;
+        i = skip_spaces(dict, i);
+        k = i;
+        while (dict[i] && dict[i] != '\n')
+            i++;
+        if (dict[i])
+            dict[i] = '\0';
+        int end = i - 1;
+        while (end >= k && (dict[end] == ' ' || dict[end] == '\t'))
+        {
+            dict[end] = '\0';
+            end--;
+        }
+        words[count++] = &dict[k];
+
+        if (dict[i])
+            i++;
+    }
+    return (count);
+}
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_strcmp.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ybarakat <ybarakat@learner.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/09/27 10:12:00 by ybarakat          #+#    #+#             */
+/*   Updated: 2025/09/27 10:12:00 by ybarakat         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+int     value_cmp(char *s1, char *s2)
+{
+        int     i;
+
+        i = 0;
+        while (s1[i] && s2[i] && s1[i] == s2[i])
+                i++;
+        return (s1[i] - s2[i]);
+}
+0: zero
+1: one
+2: two
+3: three
+4: four
+5: five
+6: six
+7: seven
+8: eight
+9: nine
+10: ten
+11: eleven
+12: twelve
+13: thirteen
+14: fourteen
+15: fifteen
+16: sixteen
+17: seventeen
+18: eighteen
+19: nineteen
+20: twenty
+30: thirty
+40: forty
+50: fifty
+60: sixty
+70: seventy
+80: eighty
+90: ninety
+100: hundred
+1000: thousand
+1000000: million
+1000000000: billion
+1000000000000: trillion
+1000000000000000: quadrillion
+1000000000000000000: quintillion
+1000000000000000000000: sextillion
+1000000000000000000000000: septillion
+1000000000000000000000000000: octillion
+1000000000000000000000000000000: nonillion
+1000000000000000000000000000000000: decillion
+1000000000000000000000000000000000000: undecillion
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   read_dict.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ybarakat <ybarakat@learner.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/09/27 10:16:00 by ybarakat          #+#    #+#             */
+/*   Updated: 2025/09/27 10:16:00 by ybarakat         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdlib.h>
+
+char    *read_dict(int c, char **d, int size)
+{
+        char    *dict;
+        int     fd;
+
+        dict = malloc(size + 1);
+        if (!dict)
+                return (NULL);
+        if (c == 2)
+                fd = open("numbers.dict", O_RDONLY);
+        else
+                fd = open(d[1], O_RDONLY);
+        if (fd == -1)
+        {
+                write(1, "Dict Error\n", 11);
+                free(dict);
+                return (NULL);
+        }
+        read(fd, dict, size);
+        dict[size] = '\0';
+        close(fd);
+        return (dict);
+}
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parse_dict.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ybarakat <ybarakat@learner.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/09/27 10:00:00 by ybarakat          #+#    #+#             */
+/*   Updated: 2025/09/27 10:00:00 by ybarakat         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+int     skip_spaces(char *str)
+{
+        int     i;
+
+        i = 0;
+        while (str[i] == ' ' || str[i] == '\t' || str[i] == '\n')
+                i++;
+        return (i);
+}
+
+int     sort_dict(char *dict)
+{
+        int     dict_size;
+        char    sorted_dict[dict_size];
+
+        dict_size = skip_spaces(dict);
+        char    numbers[dict_size][dict_size];
+        char    words[dict_size][dict_size];
+
+        while (dict_size)
+        {
+                sorted
